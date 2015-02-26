@@ -1,0 +1,13 @@
+machine:
+  node:
+    version: 0.11.13
+  environment:
+    MOCHA_REPORTER: spec
+test:
+  override:
+    - npm test
+deployment:
+  default:
+    branch: master
+    commands:
+      - git push --force "git@heroku.com:${HEROKU_APP_NAME}.git" $CIRCLE_SHA1:refs/heads/master

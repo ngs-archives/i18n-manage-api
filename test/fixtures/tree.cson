@@ -1,0 +1,18 @@
+[
+  {
+    path: 'lib/bundle/translations/en/directives/index.coffee'
+    sha: '0000000000000000000000000000000000000001'
+  }
+  {
+    path: 'lib/bundle/translations/en/filters/index.coffee'
+    sha: '0000000000000000000000000000000000000002'
+  }
+  {
+    path: 'lib/bundle/translations/ja/filters/index.coffee'
+    sha: '0000000000000000000000000000000000000003'
+  }
+  {
+    path: 'lib/bundle/translations/ja/errors/index.coffee'
+    sha: '0000000000000000000000000000000000000004'
+  }
+]
