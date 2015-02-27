@@ -180,8 +180,8 @@ app.post '/i18n/submit', (req, res) ->
                 prOpts = { title, body, head, base: baseBranch }
                 repo.createPr prOpts, (e, b, h) ->
                   return res.status(400).json messages: ["createPr: #{e.message}"] if e?
-                  res.json { url: b.html_url }
                   req.session.i18n = null
+                  res.json { url: b.html_url }
 
 app.listen process.env.PORT || 3000
 
