@@ -28,7 +28,10 @@ app.use session {
 }
 app.use bodyParser.json()
 app.use bodyParser.urlencoded extended: yes
-app.use cors()
+app.use cors
+  credentials: yes
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
+  origin: (origin, callback) -> callback null, yes
 
 currentToken = (req, res) ->
   return token if token = req.session.token
@@ -178,6 +181,7 @@ app.post '/i18n/submit', (req, res) ->
                 repo.createPr prOpts, (e, b, h) ->
                   return res.status(400).json messages: ["createPr: #{e.message}"] if e?
                   res.json { url: b.html_url }
+                  req.session.i18n = null
 
 app.listen process.env.PORT || 3000
 
