@@ -10,11 +10,18 @@ find = (obj, pathComponents, fullKeyName = '') ->
   else
     obj
 
+hasSubModule = (dir) ->
+  dir is 'views'
+
 toResources = (obj, prefix = '') ->
   res = {}
   for locale, dirs of obj
     for dir, resources of dirs
-      res["#{prefix}#{locale}/#{dir}/index.coffee"] = resources
+      if hasSubModule dir
+        for dir2, resources2 of resources
+          res["#{prefix}#{locale}/#{dir}/#{dir2}.coffee"] = resources2
+      else
+        res["#{prefix}#{locale}/#{dir}/index.coffee"] = resources
   res
 
 getPendingResources = (tree, obj, prefix = '') ->

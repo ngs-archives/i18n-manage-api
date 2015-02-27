@@ -41,12 +41,17 @@ describe 'i18nUtils', ->
         'lib/bundle/translations/en/filters/index.coffee':
           too_old:
             ago: "Ago"
+        'lib/bundle/translations/en/views/login.coffee':
+          user: "User"
         'lib/bundle/translations/ja/directives/index.coffee':
           sidebar:
             foo: "テスト"
         'lib/bundle/translations/ja/filters/index.coffee':
           too_old:
             ago: "顎"
+        'lib/bundle/translations/ja/views/login.coffee':
+          user: "ユーザー"
+
 
   describe '::getPendingResources', ->
     beforeEach ->
@@ -59,6 +64,16 @@ describe 'i18nUtils', ->
               sidebar:
                 foo: "テスト"
             path: "lib/bundle/translations/ja/directives/index.coffee"
+          }
+          {
+            data:
+              user: 'ユーザー'
+            path: "lib/bundle/translations/ja/views/login.coffee"
+          }
+          {
+            data:
+              user: 'User'
+            path: "lib/bundle/translations/en/views/login.coffee"
           }
         ]
         update: [
@@ -106,6 +121,9 @@ describe 'i18nUtils', ->
           filters:
             too_old:
               ago: "顎"
+          views:
+            login:
+              user: "ユーザー"
         en:
           directives:
             sidebar:
@@ -113,6 +131,9 @@ describe 'i18nUtils', ->
           filters:
             too_old:
               ago: "Ago"
+          views:
+            login:
+              user: "User"
       """
 
     describe '::parseFile', ->
@@ -141,6 +162,9 @@ describe 'i18nUtils', ->
             filters:
               too_old:
                 ago: "顎"
+            views:
+              login:
+                user: "ユーザー"
           en:
             directives:
               sidebar:
@@ -148,5 +172,8 @@ describe 'i18nUtils', ->
             filters:
               too_old:
                 ago: "Ago"
+            views:
+              login:
+                user: "User"
         """
 

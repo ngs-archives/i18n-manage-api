@@ -11,6 +11,9 @@ module.exports =
     filters:
       too_old:
         ago: '顎'
+    views:
+      login:
+        user: 'ユーザー'
   en:
     directives:
       sidebar:
@@ -18,4 +21,6 @@ module.exports =
     filters:
       too_old:
         ago: 'Ago'
-
+    views:
+      login:
+        user: 'User'
