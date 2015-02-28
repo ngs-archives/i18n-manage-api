@@ -35,7 +35,7 @@ app.use cors
 
 currentToken = (req, res) ->
   return token if token = req.session.token
-  res.json message: 'Not logged in'
+  res.status(401).json message: 'Not logged in'
   return
 
 app.get '/', (req, res) ->
@@ -57,7 +57,6 @@ app.get '/login', (req, res) ->
     res.json { authUrl }
 
 app.get '/oauth/callbacks', (req, res) ->
-  returnUrl = req.session.authReturnUrl
   {authReturnUrl, authState} = req.session
   {state, code} = req.query
   req.session.authReturnUrl = null
@@ -65,13 +64,13 @@ app.get '/oauth/callbacks', (req, res) ->
   if authState && state && authState isnt state
     res.status(403).json messages: ['Invalid state']
     return
-  github.auth.login req.query.code, (err, token) ->
+  github.auth.login code, (err, token) ->
     if err
       console.error err
       res.status(400).json messages: [err.message]
       return
     req.session.token = token
-    if returnUrl
+    if authReturnUrl
       res.redirect 302, authReturnUrl
     else
       res.json messages: ['Success']
@@ -144,9 +143,7 @@ createTree = (repo, pendingResources, callback) ->
 app.post '/i18n/submit', (req, res) ->
   {repo,path,baseBranch} = req.body
   path += '/' unless /\/$/.test path
-  unless token = currentToken(req, res)
-    res.status(401).json messages: ['Not logged in']
-    return
+  return unless token = currentToken req, res
   unless i18n = req.session.i18n
     res.status(404).json messages: ['No I18n']
     return
