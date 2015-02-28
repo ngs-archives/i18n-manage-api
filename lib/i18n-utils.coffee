@@ -48,6 +48,7 @@ createFile = (i18n) ->
 
   module.exports =
     #{cson.replace /\n/g, "\n  "}
+
   """
 
 parseFile = (file) ->

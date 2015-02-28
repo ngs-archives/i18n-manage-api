@@ -134,6 +134,7 @@ describe 'i18nUtils', ->
           views:
             login:
               user: "User"
+
       """
 
     describe '::parseFile', ->
@@ -175,5 +176,6 @@ describe 'i18nUtils', ->
             views:
               login:
                 user: "User"
+
         """
 
