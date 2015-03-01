@@ -4,7 +4,6 @@ coffee     = require 'gulp-coffee'
 mocha      = require 'gulp-mocha'
 watch      = require 'gulp-watch'
 coffeelint = require 'gulp-coffeelint'
-watching   = no
 
 require 'coffee-script/register'
 
