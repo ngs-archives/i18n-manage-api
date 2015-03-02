@@ -5,11 +5,13 @@ cors = require 'cors'
 dateFormat = require 'dateformat'
 express = require 'express'
 extend = require 'extend'
-i18nUtils = require './lib/i18n-utils'
 github = require 'octonode'
+morgan = require 'morgan'
 redis = require 'redis'
 session = require 'express-session'
 Path = require 'path'
+
+i18nUtils = require './lib/i18n-utils'
 
 RedisStore = require('connect-redis') session
 
@@ -33,6 +35,7 @@ app.use cors
   credentials: yes
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
   origin: (origin, callback) -> callback null, yes
+app.use morgan 'combined'
 
 currentToken = (req, res) ->
   return token if token = req.session.token
