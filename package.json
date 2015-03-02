@@ -22,14 +22,15 @@
   },
   "homepage": "https://github.com/kaizenplatform/i18n-manage-api",
   "devDependencies": {
-    "mocha": "^2.1.0",
     "expect.js": "^0.3.1",
     "gulp": "^3.8.11",
-    "gulp-mocha": "^2.0.0",
-    "gulp-util": "^3.0.4",
     "gulp-coffee": "^2.3.1",
     "gulp-coffeelint": "^0.4.0",
-    "gulp-watch": "^4.1.1"
+    "gulp-mocha": "^2.0.0",
+    "gulp-util": "^3.0.4",
+    "gulp-watch": "^4.1.1",
+    "mocha": "^2.1.0",
+    "sinon": "^1.12.2"
   },
   "dependencies": {
     "coffee-script": "^1.9.1",
