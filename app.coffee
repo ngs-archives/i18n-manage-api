@@ -9,6 +9,7 @@ i18nUtils = require './lib/i18n-utils'
 github = require 'octonode'
 redis = require 'redis'
 session = require 'express-session'
+Path = require 'path'
 
 RedisStore = require('connect-redis') session
 
@@ -100,7 +101,7 @@ app.post '/i18n', (req, res) ->
   obj[key] = value
   res.json i18n
 
-createTree = (repo, pendingResources, callback) ->
+createTree = (repo, tree, pendingResources, callback) ->
   newTree = []
   encoding = 'utf-8'
   mode = '100644'
@@ -125,15 +126,25 @@ createTree = (repo, pendingResources, callback) ->
       {content} = b
       if b.encoding is 'base64'
         content = new Buffer(content, 'base64').toString('utf8')
-      content = i18nUtils.updateFile content, data
-      repo.createBlob content, encoding, (e, b) ->
-        return callback e, null if e?
-        {sha} = b
-        newTree.push { sha, path, type, mode }
-        updateNext cb
+      i18nUtils.updateFile content, data,
+      (data, k, p, resolved) ->
+        p = Path.join Path.dirname(path), "#{p}.coffee"
+        for blob in tree
+          if p is blob.path
+            blob.data = data
+            pendingResources.update.push blob
+            do resolved
+            break
+      ,
+      (content) ->
+        repo.createBlob content, encoding, (e, b) ->
+          return callback e, null if e?
+          {sha} = b
+          newTree.push { sha, path, type, mode }
+          updateNext cb
 
-  createNext ->
-    updateNext ->
+  updateNext ->
+    createNext ->
       for blob in newTree
         delete blob.data
         delete blob.size
@@ -161,7 +172,7 @@ app.post '/i18n/submit', (req, res) ->
         return res.status(400).json messages: [e.message] if e?
         baseTree = b.sha
         pendingResources = i18nUtils.getPendingResources b.tree, i18n, path
-        createTree repo, pendingResources, (e, tree) ->
+        createTree repo, b.tree, pendingResources, (e, tree) ->
           return res.status(400).json messages: ["createTree: #{e.message}"] if e?
           repo.createTree tree, baseTree, (e, b) ->
             return res.status(400).json messages: ["repo.createTree: #{e.message}"] if e?

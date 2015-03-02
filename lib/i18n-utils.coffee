@@ -10,18 +10,11 @@ find = (obj, pathComponents, fullKeyName = '') ->
   else
     obj
 
-hasSubModule = (dir) ->
-  dir is 'views'
-
 toResources = (obj, prefix = '') ->
   res = {}
   for locale, dirs of obj
     for dir, resources of dirs
-      if hasSubModule dir
-        for dir2, resources2 of resources
-          res["#{prefix}#{locale}/#{dir}/#{dir2}.coffee"] = resources2
-      else
-        res["#{prefix}#{locale}/#{dir}/index.coffee"] = resources
+      res["#{prefix}#{locale}/#{dir}/index.coffee"] = resources
   res
 
 getPendingResources = (tree, obj, prefix = '') ->
@@ -41,24 +34,65 @@ getPendingResources = (tree, obj, prefix = '') ->
     res.keep.push blob
   res
 
-createFile = (i18n) ->
+createFile = (i18n, requires = []) ->
   cson = CSON.createCSONString i18n, indent: '  '
-  """
-  'use strict'
-
-  module.exports =
-    #{cson.replace /\n/g, "\n  "}
+  requiresCode = []
+  for {key, path} in requires.reverse()
+    requiresCode.push "\n  #{key}: require \"#{path}\""
 
   """
+  "use strict"
 
-parseFile = (file) ->
+  module.exports =#{requiresCode.join("")}
+    #{cson.replace(/\n/g, "\n  ").replace '{}', ''}
+
+  """
+# requirecallback = function(key, path, resolved)
+# callback = function(data)
+parseFile = (file, requireCallback, callback) ->
   csonString = file.toString('utf8')
     .replace /^[.\s\S]*module\.exports\s*=/m, ''
     .replace /\n\s{2}/g, "\n"
-  CSON.parse csonString
+  requires = []
+  re = /\s*\w+\s*:\s*require\s*\(?["'].+["']\)?/gm
+  if m = csonString.match re
+    for code in m
+      [_code, indent, key, path] = code.match /\n?(\s*)(\w+)\s*:\s*require\s*\(?["'](.+)["']\)?/
+      if indent.length > 0
+        console.warn "Found indent level #{indent.length / 2}, but currently supporting required namespaces on top level m(_ _)m"
+      requires.push {key, path}
+    csonString = csonString.replace re, ''
+  resolveNextRequire = ->
+    if requires.length == 0
+      callback CSON.parse csonString
+      return
+    {key, path} = requires.pop()
+    if requireCallback
+      requireCallback key, path, ->
+        resolveNextRequire()
+    else
+      resolveNextRequire()
+  do resolveNextRequire
+  return
 
-updateFile = (file, override) ->
-  createFile extend yes, parseFile(file), override
+# requirecallback = function(override, key, path, resolved)
+# callback = function(content)
+updateFile = (file, override, requireCallback, callback) ->
+  requires = []
+  parseFile file,
+  (key, path, resolved) ->
+    requires.push { key, path }
+    if val = override[key]
+      delete override[key]
+      requireCallback? val, key, path, resolved
+    else
+      do resolved
+    return
+  ,
+  (data) ->
+    file = createFile extend(yes, data, override), requires
+    callback file
+  return
 
 module.exports = {
   find

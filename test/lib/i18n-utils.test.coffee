@@ -1,16 +1,20 @@
 i18nUtils = require '../../lib/i18n-utils'
 expect = require 'expect.js'
+sinon = require 'sinon'
 fs = require 'fs'
 {loadFixture} = require '../helper'
 
 describe 'i18nUtils', ->
-  coffeeFile = subject = obj = _obj = _tree = prefix = tree = null
+  coffeeFile = subject = obj = _obj = _tree = prefix = tree =
+  content = requireCallback = describedMethod =
+  overrides = callback = callbackData = requires = null
   beforeEach ->
-    _obj = _tree = null
+    coffeeFile = subject = obj = _obj = _tree = prefix = tree =
+    content = requireCallback = parseFile = updateFile = callbackData = null
     prefix = -> 'lib/bundle/translations/'
     tree = -> _tree ||= loadFixture 'tree'
     obj = -> _obj ||= loadFixture 'i18n'
-    coffeeFile = -> fs.readFileSync "#{__dirname}/../fixtures/i18n-exports.coffee"
+    coffeeFile = (filename = 'i18n-exports') -> fs.readFileSync "#{__dirname}/../fixtures/#{filename}.coffee"
 
   describe '::find', ->
     pathComponents = null
@@ -41,16 +45,18 @@ describe 'i18nUtils', ->
         'lib/bundle/translations/en/filters/index.coffee':
           too_old:
             ago: "Ago"
-        'lib/bundle/translations/en/views/login.coffee':
-          user: "User"
+        'lib/bundle/translations/en/views/index.coffee':
+          login:
+            user: "User"
         'lib/bundle/translations/ja/directives/index.coffee':
           sidebar:
             foo: "テスト"
         'lib/bundle/translations/ja/filters/index.coffee':
           too_old:
             ago: "顎"
-        'lib/bundle/translations/ja/views/login.coffee':
-          user: "ユーザー"
+        'lib/bundle/translations/ja/views/index.coffee':
+          login:
+            user: "ユーザー"
 
 
   describe '::getPendingResources', ->
@@ -67,13 +73,15 @@ describe 'i18nUtils', ->
           }
           {
             data:
-              user: 'ユーザー'
-            path: "lib/bundle/translations/ja/views/login.coffee"
+              login:
+                user: 'ユーザー'
+            path: "lib/bundle/translations/ja/views/index.coffee"
           }
           {
             data:
-              user: 'User'
-            path: "lib/bundle/translations/en/views/login.coffee"
+              login:
+                user: 'User'
+            path: "lib/bundle/translations/en/views/index.coffee"
           }
         ]
         update: [
@@ -108,51 +116,166 @@ describe 'i18nUtils', ->
 
   describe '::createFile', ->
     beforeEach ->
-      subject = -> i18nUtils.createFile obj()
+      requires = ->
+        [
+          { path: './views/sample1', key: 'sample1' }
+          { path: './views/sample2', key: 'sample2' }
+        ]
+      obj = ->
+        foo:
+          bar: 1
+        baz:
+          qux: '2'
+      subject = -> i18nUtils.createFile obj(), requires()
     it 'creates coffee file', ->
       expect(subject()).to.eql """
-      'use strict'
+      "use strict"
 
       module.exports =
-        ja:
-          directives:
-            sidebar:
-              foo: "テスト"
-          filters:
-            too_old:
-              ago: "顎"
-          views:
-            login:
-              user: "ユーザー"
-        en:
-          directives:
-            sidebar:
-              foo: "Test"
-          filters:
-            too_old:
-              ago: "Ago"
-          views:
-            login:
-              user: "User"
+        sample2: require "./views/sample2"
+        sample1: require "./views/sample1"
+        foo:
+          bar: 1
+        baz:
+          qux: "2"
 
       """
 
-    describe '::parseFile', ->
-      content = null
-      beforeEach ->
-        content = -> coffeeFile()
-        subject = -> i18nUtils.parseFile content()
-      it 'parses coffee file', ->
+  describe '::parseFile', ->
+    beforeEach ->
+      content = -> coffeeFile()
+      requireCallback = sinon.stub()
+      describedMethod = (callback) ->
+        i18nUtils.parseFile content(), requireCallback, callback
+
+    describe 'callback data', ->
+      beforeEach (done) ->
+        subject = -> callbackData
+        describedMethod (data) ->
+          try
+            callbackData = data
+            do done
+          catch e
+            done e
+      it 'callbacks parsed data', ->
         expect(subject()).to.eql obj()
 
-    describe '::updateFile', ->
-      content = null
+    describe 'resolve require', ->
+      call = null
       beforeEach ->
-        content = -> coffeeFile()
-        subject = -> i18nUtils.updateFile content(), ja: directives: sidebar: baz: 'qux'
+        call = null
+        content = -> coffeeFile 'i18n-exports-require'
+        callback = sinon.spy()
+        describedMethod callback
+
+      describe 'on first call', ->
+        beforeEach ->
+          call = requireCallback.getCall 0
+        it 'does not call callback', ->
+          subject = -> callback.called
+          expect(subject()).to.be no
+        it 'calls requireCallback', ->
+          subject = -> requireCallback.called
+          expect(subject()).to.be yes
+        it 'called requireCallback once', ->
+          subject = -> requireCallback.callCount
+          expect(subject()).to.be 1
+        it 'calls requireCallback with arguments 0', ->
+          subject = -> call.args[0]
+          expect(subject()).to.eql 'qux'
+        it 'calls requireCallback with arguments 1', ->
+          subject = -> call.args[1]
+          expect(subject()).to.eql './qux'
+        it 'calls requireCallback with arguments 2', ->
+          subject = -> typeof call.args[2]
+          expect(subject()).to.eql 'function'
+
+      describe 'on second call', ->
+        beforeEach ->
+          do requireCallback.getCall(0).args[2]
+          call = requireCallback.getCall 1
+        it 'does not call callback', ->
+          subject = -> callback.called
+          expect(subject()).to.be no
+        it 'calls requireCallback', ->
+          subject = -> requireCallback.called
+          expect(subject()).to.be yes
+        it 'called requireCallback once', ->
+          subject = -> requireCallback.callCount
+          expect(subject()).to.be 2
+        it 'calls requireCallback with arguments 0', ->
+          subject = -> call.args[0]
+          expect(subject()).to.eql 'foo'
+        it 'calls requireCallback with arguments 1', ->
+          subject = -> call.args[1]
+          expect(subject()).to.eql './foo'
+        it 'calls requireCallback with arguments 2', ->
+          subject = -> typeof call.args[2]
+          expect(subject()).to.eql 'function'
+
+      describe 'on third call', ->
+        beforeEach ->
+          do requireCallback.getCall(0).args[2]
+          do requireCallback.getCall(1).args[2]
+          call = requireCallback.getCall 2
+        it 'does not call callback', ->
+          subject = -> callback.called
+          expect(subject()).to.be no
+        it 'calls requireCallback', ->
+          subject = -> requireCallback.called
+          expect(subject()).to.be yes
+        it 'called requireCallback once', ->
+          subject = -> requireCallback.callCount
+          expect(subject()).to.be 3
+        it 'calls requireCallback with arguments 0', ->
+          subject = -> call.args[0]
+          expect(subject()).to.eql 'hoge'
+        it 'calls requireCallback with arguments 1', ->
+          subject = -> call.args[1]
+          expect(subject()).to.eql './hoge'
+        it 'calls requireCallback with arguments 2', ->
+          subject = -> typeof call.args[2]
+          expect(subject()).to.eql 'function'
+
+      describe 'on fourth call', ->
+        beforeEach ->
+          do requireCallback.getCall(0).args[2]
+          do requireCallback.getCall(1).args[2]
+          do requireCallback.getCall(2).args[2]
+          call = callback
+
+        it 'calls callback', ->
+          subject = -> callback.called
+          expect(subject()).to.be yes
+
+        it 'does not call requireCallback any more', ->
+          subject = -> requireCallback.callCount
+          expect(subject()).to.be 3
+
+        it 'calls callback with arguments', ->
+          subject = -> callback.getCall(0).args
+          expect(subject()).to.eql [bar: 1, baz: '2']
+
+  describe '::updateFile', ->
+    beforeEach ->
+      content = -> coffeeFile()
+      requireCallback = sinon.stub()
+      overrides = -> ja: { directives: sidebar: baz: 'qux' }, foo: 123, qux: '456'
+      describedMethod = (callback) ->
+        i18nUtils.updateFile content(), overrides(), requireCallback, callback
+
+    describe 'callback data', ->
+      beforeEach (done) ->
+        subject = -> callbackData
+        describedMethod (data) ->
+          try
+            callbackData = data
+            do done
+          catch e
+            done e
       it 'updates coffee file', ->
         expect(subject()).to.eql """
-        'use strict'
+        "use strict"
 
         module.exports =
           ja:
@@ -176,6 +299,100 @@ describe 'i18nUtils', ->
             views:
               login:
                 user: "User"
+          foo: 123
+          qux: "456"
 
         """
+
+    describe 'resolve require', ->
+      call = null
+      beforeEach ->
+        call = null
+        content = -> coffeeFile 'i18n-exports-require'
+        callback = sinon.spy()
+        describedMethod callback
+
+      describe 'on first call', ->
+        beforeEach ->
+          call = requireCallback.getCall 0
+        it 'does not call callback', ->
+          subject = -> callback.called
+          expect(subject()).to.be no
+        it 'calls requireCallback', ->
+          subject = -> requireCallback.called
+          expect(subject()).to.be yes
+        it 'called requireCallback once', ->
+          subject = -> requireCallback.callCount
+          expect(subject()).to.be 1
+        it 'calls requireCallback with arguments 0', ->
+          subject = -> call.args[0]
+          expect(subject()).to.eql '456'
+        it 'calls requireCallback with arguments 1', ->
+          subject = -> call.args[1]
+          expect(subject()).to.eql 'qux'
+        it 'calls requireCallback with arguments 2', ->
+          subject = -> call.args[2]
+          expect(subject()).to.eql './qux'
+        it 'calls requireCallback with arguments 3', ->
+          subject = -> typeof call.args[3]
+          expect(subject()).to.eql 'function'
+
+      describe 'on second call', ->
+        beforeEach ->
+          do requireCallback.getCall(0).args[3]
+          call = requireCallback.getCall 1
+        it 'does not call callback', ->
+          subject = -> callback.called
+          expect(subject()).to.be no
+        it 'calls requireCallback', ->
+          subject = -> requireCallback.called
+          expect(subject()).to.be yes
+        it 'called requireCallback once', ->
+          subject = -> requireCallback.callCount
+          expect(subject()).to.be 2
+        it 'calls requireCallback with arguments 0', ->
+          subject = -> call.args[0]
+          expect(subject()).to.eql 123
+        it 'calls requireCallback with arguments 1', ->
+          subject = -> call.args[1]
+          expect(subject()).to.eql 'foo'
+        it 'calls requireCallback with arguments 2', ->
+          subject = -> call.args[2]
+          expect(subject()).to.eql './foo'
+        it 'calls requireCallback with arguments 3', ->
+          subject = -> typeof call.args[3]
+          expect(subject()).to.eql 'function'
+
+      describe 'on third call', ->
+        beforeEach ->
+          do requireCallback.getCall(0).args[3]
+          do requireCallback.getCall(1).args[3]
+          call = callback
+
+        it 'calls callback', ->
+          subject = -> callback.called
+          expect(subject()).to.be yes
+
+        it 'does not call requireCallback any more', ->
+          subject = -> requireCallback.callCount
+          expect(subject()).to.be 2
+
+        it 'calls callback with arguments', ->
+          subject = -> callback.getCall(0).args[0]
+          expect(subject()).to.eql """
+         "use strict"
+
+         module.exports =
+           hoge: require "./hoge"
+           foo: require "./foo"
+           qux: require "./qux"
+           bar: 1
+           baz: "2"
+           ja:
+             directives:
+               sidebar:
+                 baz: "qux"
+
+          """
+
 
