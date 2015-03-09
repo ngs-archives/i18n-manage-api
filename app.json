@@ -3,5 +3,15 @@
   "description": "Web API to Manage Angular App I18n file",
   "repository": "https://github.com/kaizenplatform/i18n-manage-api",
   "logo": "https://avatars3.githubusercontent.com/u/5586256?v=3&s=500",
-  "keywords": ["node", "express", "github", "angularjs", "i18n"]
+  "keywords": ["node", "express", "github", "angularjs", "i18n"],
+  "env": {
+    "SESSION_SECRET": "uJ8VGkSPYML9KNMBLD/0xIbvmt9nkhTrZgMZkZMaqdNUR1CpC4CBmQ",
+    "GITHUB_CLIENT_ID": {
+      "description": "GitHub Client ID"
+    },
+    "GITHUB_CLIENT_SECRET": {
+      "description": "GitHub Client SECRET"
+    }
+  },
+  "addons": ["redistogo"]
 }
