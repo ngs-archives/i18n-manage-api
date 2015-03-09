@@ -34,12 +34,23 @@ getPendingResources = (tree, obj, prefix = '') ->
     res.keep.push blob
   res
 
+removeNull = (obj) ->
+  for k, v of obj
+    if v is null
+      delete obj[k]
+    else if typeof v == 'object'
+      v = removeNull v
+      if Object.keys(v).length == 0
+        delete obj[k]
+      else
+        obj[k] = v
+  obj
+
 createFile = (i18n, requires = []) ->
-  cson = CSON.createCSONString i18n, indent: '  '
+  cson = CSON.createCSONString removeNull(i18n), indent: '  '
   requiresCode = []
   for {key, path} in requires.reverse()
     requiresCode.push "\n  #{key}: require \"#{path}\""
-
   """
   "use strict"
 
