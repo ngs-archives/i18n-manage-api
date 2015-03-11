@@ -55,7 +55,7 @@ createFile = (i18n, requires = []) ->
   "use strict"
 
   module.exports =#{requiresCode.join("")}
-    #{cson.replace(/\n/g, "\n  ").replace '{}', ''}
+    #{cson.replace(/\n/g, "\n  ").replace('{}', '').replace(/#{([^\}]+)}/, '\\#\\{$1\\}')}
 
   """
 # requirecallback = function(key, path, resolved)
