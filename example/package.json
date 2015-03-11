@@ -1,0 +1,23 @@
+{
+  "name": "i18-manage-example",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp build"
+  },
+  "author": "Atsushi Nagase<a@ngs.io>",
+  "license": "MIT",
+  "devDependencies": {
+    "coffee-script": "^1.9.1",
+    "gulp": "^3.8.11",
+    "gulp-coffee": "^2.3.1",
+    "gulp-coffeeify": "^0.1.7",
+    "gulp-coffeelint": "^0.4.0",
+    "gulp-jade": "^1.0.0",
+    "gulp-util": "^3.0.4",
+    "gulp-watch": "^4.1.1",
+    "gulp-sass": "^1.3.3"
+  }
+}

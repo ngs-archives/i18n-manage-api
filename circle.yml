@@ -1,8 +1,11 @@
 machine:
   node:
-    version: 0.11.13
+    version: 0.10.26
   environment:
     MOCHA_REPORTER: spec
+compile:
+  override:
+    - cd example && npm install && npm run build
 test:
   override:
     - npm test
