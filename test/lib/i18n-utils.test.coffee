@@ -141,13 +141,8 @@ describe 'i18nUtils', ->
 
       """
 
-    describe 'when having null value', ->
+    describe 'when containing null value', ->
       beforeEach ->
-        requires = ->
-          [
-            { path: './views/sample1', key: 'sample1' }
-            { path: './views/sample2', key: 'sample2' }
-          ]
         obj = ->
           foo:
             bar: null
@@ -167,6 +162,26 @@ describe 'i18nUtils', ->
             qux: "2"
 
         """
+
+    describe 'when containing sharp symbol', ->
+      beforeEach ->
+        obj = ->
+          foo:
+            bar: '#{foo}'
+
+      it 'escapes sharp', ->
+
+        expect(subject()).to.eql """
+        "use strict"
+
+        module.exports =
+          sample2: require "./views/sample2"
+          sample1: require "./views/sample1"
+          foo:
+            bar: "\\#\\{foo\\}"
+
+        """
+
 
   describe '::parseFile', ->
     beforeEach ->
