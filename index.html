@@ -1,1 +1,133 @@
-It works
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/octicons/2.2.0/octicons.min.css" rel="stylesheet">
+  <link href="./styles/app.css" rel="stylesheet">
+  <title></title>
+</head>
+<body ng-app="ngs.i18nManage.demo">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="page-header">
+          <h1 translate="title"></h1>
+        </div>
+        <ul class="nav navbar-nav navbar-right" ng-controller="LanguageSwitchController" id="language-switch">
+          <li class="dropdown" dropdown is-open="status.isopen">
+            <button type="button" class="btn btn-default dropdown-toggle" dropdown-toggle ng-disabled="disabled">
+              <span class="glyphicon glyphicon-globe"></span>
+              {{ 'languages.' + currentLanguage + '.title' | translate }}
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+              <li ng-repeat="lang in languages">
+                <a href="#" ng-click="changeLanguage(lang)">
+                  {{ 'languages.' + lang + '.title' | translate  }}
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <tabset>
+          <tab ng-controller="IntroductionController" select="onTabSelect()">
+            <tab-heading>
+              <span>{{ 'introduction.title' | translate }}</span>
+            </tab-heading>
+            <p translate="introduction.paragraph1"></p>
+            <p translate="introduction.paragraph2"></p>
+          </tab>
+          <tab ng-controller="TranslationTableController" select="onTabSelect()" active="isDefault">
+            <tab-heading>
+              <span translate="translationTable.title"></span>
+            </tab-heading>
+            <div class="btn-group">
+              <p>
+                <button type="button" class="btn btn-info" ng-model="showDiffs" btn-checkbox>
+                  <span class="octicon octicon-diff"></span>
+                  {{ 'translationTable.diffOnlyButton.title' | translate }}
+                </button>
+              </p>
+            </div>
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr>
+                  <th>Key</th>
+                  <th ng-repeat="lang in languages">{{ 'languages.' + lang + '.title' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr translation-table-item ng-repeat="key in keys" key="key" translations="translations" languages="languages" show-diffs="showDiffs"></tr>
+              </tbody>
+            </table>
+          </tab>
+          <tab ng-controller="PullRequestController" select="onTabSelect()" active="isDefault">
+            <tab-heading>
+              <span>{{ 'pullRequest.title' | translate }}</span>
+            </tab-heading>
+            <div ng-if="accessToken == null">
+              <button type="button" class="btn btn-info" ng-click="login()">
+                <span class="octicon octicon-diff"></span>
+                {{ 'pullRequest.login' | translate }}
+              </button>
+            </div>
+            <div ng-if="accessToken != null">
+              <div ng-if="forks.length > 0">
+                <h2 translate="pullRequest.selectFork"></h2>
+                <ul class="list-group">
+                  <li ng-repeat="fork in forks" class="list-group-item">
+                    <a ng-click="sendPullRequest(fork)"><img ng-src="{{ fork.owner.avatar_url }}" width="25">&nbsp;{{ fork.owner.login }} / {{ fork.name }}</a>
+                  </li>
+                </ul>
+              </div>
+              <h2>
+                <span translate="pullRequest.or" ng-if="forks.length > 0"></span>
+                {{ 'pullRequest.createFork' | translate }}
+              </h2>
+              <ul class="list-group">
+                <li class="list-group-item" ng-if="me && forkedLogins.indexOf(me.login) == -1">
+                  <a ng-click="createFork(me)"><img ng-src="{{ me.avatar_url }}" width="25">&nbsp;{{ me.login }}</a>
+                </li>
+                <li ng-repeat="org in orgs" class="list-group-item" ng-if="forkedLogins.indexOf(org.login) == -1">
+                  <a ng-click="createFork(org)"><img ng-src="{{ org.avatar_url }}" width="25">&nbsp;{{ org.login }}</a>
+                </li>
+              </ul>
+            </div>
+          </tab>
+        </tabset>
+      </div>
+    </div>
+  </div>
+  <script type="text/ng-template" id="directives/translationTable/item.html">
+    <tr ng-show="!showDiffs || diff">
+      <th>{{ key }}</th>
+      <td ng-repeat="lang in languages" translation-table-form key="lang + '.' + key" value="translations[lang][key]"></td>
+    </tr>
+  </script>
+  <script type="text/ng-template" id="directives/translationTable/form.html">
+    <td ng-class="{'has-diff': diff}">
+      <span ng-click="editing=true" ng-hide="editing || requesting">{{ value }}</span>
+      <form ng-show="editing || requesting" ng-submit="submitI18n($event)">
+        <input type="text" class="form-control" name="value" ng-blur="editing=requesting" ng-disabled="requesting" ng-required ng-model="value">
+      </form>
+    </td>
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.15/angular.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-translate/2.6.1/angular-translate.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-translate-loader-url/2.6.1/angular-translate-loader-url.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.12.1/ui-bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.12.1/ui-bootstrap-tpls.min.js"></script>
+  <script src="./scripts/app.js"></script>
+  <script src="./scripts/translations/en.js"></script>
+  <script src="./scripts/translations/ja.js"></script>
+  <script src="./scripts/services/i18nManager.js"></script>
+  <script src="./scripts/factories/github.js"></script>
+  <script src="./scripts/controllers/introduction.js"></script>
+  <script src="./scripts/controllers/translationTable.js"></script>
+  <script src="./scripts/controllers/pullRequest.js"></script>
+  <script src="./scripts/controllers/languageSwitch.js"></script>
+  <script src="./scripts/directives/translationTableItem.js"></script>
+  <script src="./scripts/directives/translationTableForm.js"></script>
+</body>
+</html>
