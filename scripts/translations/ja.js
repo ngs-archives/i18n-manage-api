@@ -1,6 +1,6 @@
 angular.module('ngs.i18nManage.demo')
 .config(function($translateProvider) {
-  $translateProvider.translations('ja', {
+  $translateProvider.translations('ja', /* begin:generatedData */{
     "title": "I18n 管理デモ",
     "languages": {
       "en": {
@@ -28,5 +28,5 @@ angular.module('ngs.i18nManage.demo')
       "createFork": "フォークする",
       "or": "または"
     }
-  });
+  } /* end:generatedData */);
 });

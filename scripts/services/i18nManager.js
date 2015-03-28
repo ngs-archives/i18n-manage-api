@@ -105,8 +105,9 @@
           repo: fork.owner.login + '/' + fork.name,
           baseBranch: 'gh-pages',
           path: 'scripts/translations',
-          prefix: "angular.module('ngs.i18nManage.demo')\n.config(function($translateProvider) {\n  $translateProvider.translations('ja',",
+          prefix: "angular.module('ngs.i18nManage.demo')\n.config(function($translateProvider) {\n  $translateProvider.translations('{{locale}}',",
           suffix: ");\n});",
+          useIndex: false,
           indent: 2,
           extension: 'js'
         })
