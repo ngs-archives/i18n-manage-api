@@ -77,15 +77,16 @@ createFile = (i18n, requires, fileOptions) ->
     istr += ' ' while istr.length < indent
     indent = istr
   requiresCode = []
+  baseIndent = prefix.split("\n").pop().match(/^(\s+)/)?[1] || ''
   for {key, path} in requires.reverse()
     if extension is 'js'
-      requiresCode.push """\n#{indent}"#{key}": require(\"#{path}\"),"""
+      requiresCode.push """\n#{baseIndent}#{indent}"#{key}": require(\"#{path}\"),"""
     else
-      requiresCode.push """#{indent}#{key}: require \"#{path}\"\n"""
+      requiresCode.push """#{baseIndent}#{indent}#{key}: require \"#{path}\"\n"""
   data = switch extension
     when 'js', 'json'
       '/* begin:generatedData */' + JSON.stringify(removeNull(i18n), null, indent)
-      .replace(/\n/g, "\n    ")
+      .replace(/\n/g, "\n#{baseIndent}")
       .replace(/^{/, "{#{requiresCode.join('')}") + '/* end:generatedData */'
     when 'cson', 'coffee'
       ret = requiresCode.join ''
