@@ -112,7 +112,8 @@ createTree = (repo, tree, pendingResources, fileOptions, callback) ->
   createNext = (cb) ->
     unless blob = pendingResources.create.pop()
       return cb()
-    {data, path} = blob
+    {data, path, locale} = blob
+    fileOptions.locale = locale
     content = i18nUtils.createFile data, fileOptions
     repo.createBlob content, encoding, (e, b) ->
       return callback e, null if e?
@@ -123,13 +124,14 @@ createTree = (repo, tree, pendingResources, fileOptions, callback) ->
   updateNext = (cb) ->
     unless blob = pendingResources.update.pop()
       return cb()
-    {data, path} = blob
+    {data, path, locale} = blob
+    fileOptions.locale = locale
     repo.blob blob.sha, (e, b) ->
       return callback e, null if e?
       {content} = b
       if b.encoding is 'base64'
         content = new Buffer(content, 'base64').toString('utf8')
-      i18nUtils.updateFile content, data,
+      i18nUtils.updateFile content, data, fileOptions,
       (data, k, p, resolved) ->
         p = Path.join Path.dirname(path), "#{p}.#{fileOptions.extension}"
         for blob in tree
@@ -164,8 +166,10 @@ app.post '/i18n/submit', (req, res) ->
     prefix
     suffix
     indent
+    useIndex
   } = req.body
   extension ||= 'coffee'
+  useIndex ?= yes
   fileOptions = { extension, suffix, prefix, indent }
   path += '/' unless /\/$/.test path
   return unless token = currentToken req, res
@@ -174,6 +178,7 @@ app.post '/i18n/submit', (req, res) ->
     return
   client = github.client token
   repo = client.repo repo
+  baseRepo = client.repo baseRepo || repo
   client.me().info (e, b) ->
     return res.status(400).json messages: [e.message] if e?
     me = b
@@ -185,7 +190,7 @@ app.post '/i18n/submit', (req, res) ->
       repo.tree baseCommit, yes, (e, b) ->
         return res.status(400).json messages: [e.message] if e?
         baseTree = b.sha
-        pendingResources = i18nUtils.getPendingResources b.tree, i18n, path
+        pendingResources = i18nUtils.getPendingResources b.tree, i18n, path, useIndex, extension
         createTree repo, b.tree, pendingResources, fileOptions, (e, tree) ->
           return res.status(400).json messages: ["createTree: #{e.message}"] if e?
           repo.createTree tree, baseTree, (e, b) ->
@@ -198,9 +203,9 @@ app.post '/i18n/submit', (req, res) ->
               repo.createRef ref, sha, (e, b) ->
                 return res.status(400).json messages: ["createRef: #{e.message}"] if e?
                 body = "https://github.com/kaizenplatform/i18n-manage-api"
-                head = "#{(baseRepo || repo.name).split('/')[0]}:#{branchName}"
+                head = "#{(repo.name).split('/')[0]}:#{branchName}"
                 prOpts = { title, body, head, base: baseBranch }
-                repo.createPr prOpts, (e, b, h) ->
+                baseRepo.createPr prOpts, (e, b, h) ->
                   return res.status(400).json messages: ["createPr: #{e.message}"] if e?
                   req.session.i18n = null
                   res.json { url: b.html_url }
