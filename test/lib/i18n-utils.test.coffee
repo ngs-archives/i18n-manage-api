@@ -6,7 +6,7 @@ fs = require 'fs'
 
 describe 'i18nUtils', ->
   coffeeFile = subject = obj = _obj = _tree = prefix = tree =
-  content = requireCallback = describedMethod =
+  content = requireCallback = describedMethod = fileOptions =
   overrides = callback = callbackData = requires = null
   beforeEach ->
     coffeeFile = subject = obj = _obj = _tree = prefix = tree =
@@ -121,12 +121,13 @@ describe 'i18nUtils', ->
           { path: './views/sample1', key: 'sample1' }
           { path: './views/sample2', key: 'sample2' }
         ]
+      fileOptions = ->
       obj = ->
         foo:
           bar: 1
         baz:
           qux: '2'
-      subject = -> i18nUtils.createFile obj(), requires()
+      subject = -> i18nUtils.createFile obj(), requires(), fileOptions()
     it 'creates coffee file', ->
       expect(subject()).to.eql """
       "use strict"
@@ -182,6 +183,24 @@ describe 'i18nUtils', ->
 
         """
 
+    describe 'when extension is js', ->
+      beforeEach ->
+        fileOptions = -> extension: 'js', prefix: 'translate(', suffix: ')'
+
+      it 'creates js', ->
+
+        expect(subject()).to.eql """
+        translate({
+          "sample2": require("./views/sample2"),
+          "sample1": require("./views/sample1"),
+          "foo": {
+            "bar": 1
+          },
+          "baz": {
+            "qux": "2"
+          }
+        })
+        """
 
   describe '::parseFile', ->
     beforeEach ->
