@@ -72,7 +72,10 @@
                 {{ 'pullRequest.login' | translate }}
               </button>
             </div>
-            <div ng-if="accessToken != null">
+            <div ng-if="accessToken != null && !hasDiffs">
+              <p translate="pullRequest.noDiffs"></p>
+            </div>
+            <div ng-if="accessToken != null && hasDiffs">
               <div ng-if="forks.length > 0">
                 <h2 translate="pullRequest.selectFork"></h2>
                 <ul class="list-group">

@@ -26,7 +26,8 @@ angular.module('ngs.i18nManage.demo')
     "login": "ログイン",
     "selectFork": "フォークを選択",
     "createFork": "フォークする",
-    "or": "または"
+    "or": "または",
+    "noDiffs": "差分がありません"
   }
 }/* end:generatedData */);
 });

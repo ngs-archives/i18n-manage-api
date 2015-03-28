@@ -26,7 +26,8 @@ angular.module('ngs.i18nManage.demo')
     "login": "Login",
     "selectFork": "Select fork",
     "createFork": "Create fork",
-    "or": "or"
+    "or": "or",
+    "noDiffs": "No diffs"
   }
 }/* end:generatedData */);
 });

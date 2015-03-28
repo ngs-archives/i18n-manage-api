@@ -1,5 +1,5 @@
 angular.module('ngs.i18nManage.demo')
-.controller('PullRequestController', function($scope, $location, i18nManager, GitHub) {
+.controller('PullRequestController', function($rootScope, $scope, $location, i18nManager, GitHub, $window) {
   var client = null, baseRepo = 'ngs/i18n-manage-api';
 
   function getForks() {
@@ -43,7 +43,10 @@ angular.module('ngs.i18nManage.demo')
   }
 
   function sendPullRequest(fork) {
-    i18nManager.submit(baseRepo, fork);
+    i18nManager.submit(baseRepo, fork)
+    .success(function(data, status, headers, config) {
+      $window.location.assign(data.url);
+    });
   }
 
   $scope.path = '/pr';
@@ -58,6 +61,9 @@ angular.module('ngs.i18nManage.demo')
   $scope.createFork = function(owner) {
     createFork(owner.login);
   };
+  $rootScope.$on('$translateChangeSuccess', function() {
+    $scope.hasDiffs = Object.keys(i18nManager.diff()).length > 0;
+  });
   $scope.accessToken = null;
   i18nManager.auth()
   .success(function(data, status, headers, config) {
