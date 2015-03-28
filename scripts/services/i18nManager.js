@@ -107,6 +107,7 @@
           path: 'scripts/translations',
           prefix: "angular.module('ngs.i18nManage.demo')\n.config(function($translateProvider) {\n  $translateProvider.translations('ja',",
           suffix: ");\n});",
+          useIndex: false,
           indent: 2,
           extension: 'js'
         })
