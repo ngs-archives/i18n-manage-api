@@ -46,18 +46,41 @@ removeNull = (obj) ->
         obj[k] = v
   obj
 
-createFile = (i18n, requires = []) ->
-  cson = CSON.createCSONString removeNull(i18n), indent: '  '
-  requiresCode = []
-  for {key, path} in requires.reverse()
-    requiresCode.push "\n  #{key}: require \"#{path}\""
-  """
+createFile = (i18n, requires, fileOptions) ->
+  if typeof fileOptions is 'undefined' && !(requires instanceof Array)
+    fileOptions = requires
+    requires = []
+  { extension, suffix, prefix, indent } = fileOptions || {}
+  indent ||= 2
+  extension ||= 'coffee'
+  prefix ||= """
   "use strict"
 
-  module.exports =#{requiresCode.join("")}
-    #{cson.replace(/\n/g, "\n  ").replace('{}', '').replace(/#{([^\}]+)}/, '\\#\\{$1\\}')}
+  module.exports =
 
   """
+  suffix ||= "\n"
+  if typeof indent is 'number'
+    istr = ''
+    istr += ' ' while istr.length < indent
+    indent = istr
+  requiresCode = []
+  for {key, path} in requires.reverse()
+    if extension is 'js'
+      requiresCode.push """\n#{indent}"#{key}": require(\"#{path}\"),"""
+    else
+      requiresCode.push """#{indent}#{key}: require \"#{path}\"\n"""
+  data = switch extension
+    when 'js', 'json'
+      JSON.stringify(removeNull(i18n), null, indent)
+      .replace(/^{/, "{#{requiresCode.join('')}")
+    when 'cson', 'coffee'
+      ret = requiresCode.join ''
+      ret += indent + CSON.createCSONString(removeNull(i18n), {indent})
+      .replace(/\n/g, "\n  ").replace('{}', '').replace(/#{([^\}]+)}/, '\\#\\{$1\\}')
+      ret
+  prefix + data + suffix
+
 # requirecallback = function(key, path, resolved)
 # callback = function(data)
 parseFile = (file, requireCallback, callback) ->

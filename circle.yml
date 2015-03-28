@@ -3,6 +3,10 @@ machine:
     version: 0.11.13
   environment:
     MOCHA_REPORTER: spec
+general:
+  branches:
+    ignore:
+      - gh-pages
 test:
   override:
     - npm test

@@ -104,7 +104,7 @@ app.post '/i18n', (req, res) ->
   obj[key] = value
   res.json i18n
 
-createTree = (repo, tree, pendingResources, callback) ->
+createTree = (repo, tree, pendingResources, fileOptions, callback) ->
   newTree = []
   encoding = 'utf-8'
   mode = '100644'
@@ -113,7 +113,7 @@ createTree = (repo, tree, pendingResources, callback) ->
     unless blob = pendingResources.create.pop()
       return cb()
     {data, path} = blob
-    content = i18nUtils.createFile data
+    content = i18nUtils.createFile data, fileOptions
     repo.createBlob content, encoding, (e, b) ->
       return callback e, null if e?
       {sha} = b
@@ -131,7 +131,7 @@ createTree = (repo, tree, pendingResources, callback) ->
         content = new Buffer(content, 'base64').toString('utf8')
       i18nUtils.updateFile content, data,
       (data, k, p, resolved) ->
-        p = Path.join Path.dirname(path), "#{p}.coffee"
+        p = Path.join Path.dirname(path), "#{p}.#{fileOptions.extension}"
         for blob in tree
           if p is blob.path
             blob.data = data
@@ -155,7 +155,18 @@ createTree = (repo, tree, pendingResources, callback) ->
       callback null, newTree
 
 app.post '/i18n/submit', (req, res) ->
-  {repo,path,baseBranch} = req.body
+  {
+    repo
+    path
+    baseBranch
+    baseRepo
+    extension
+    prefix
+    suffix
+    intent
+  } = req.body
+  extension ||= 'coffee'
+  fileOptions = { extension, suffix, prefix, indent }
   path += '/' unless /\/$/.test path
   return unless token = currentToken req, res
   unless i18n = req.session.i18n
@@ -175,7 +186,7 @@ app.post '/i18n/submit', (req, res) ->
         return res.status(400).json messages: [e.message] if e?
         baseTree = b.sha
         pendingResources = i18nUtils.getPendingResources b.tree, i18n, path
-        createTree repo, b.tree, pendingResources, (e, tree) ->
+        createTree repo, b.tree, pendingResources, fileOptions, (e, tree) ->
           return res.status(400).json messages: ["createTree: #{e.message}"] if e?
           repo.createTree tree, baseTree, (e, b) ->
             return res.status(400).json messages: ["repo.createTree: #{e.message}"] if e?
@@ -187,7 +198,7 @@ app.post '/i18n/submit', (req, res) ->
               repo.createRef ref, sha, (e, b) ->
                 return res.status(400).json messages: ["createRef: #{e.message}"] if e?
                 body = "https://github.com/kaizenplatform/i18n-manage-api"
-                head = "#{repo.name.split('/')[0]}:#{branchName}"
+                head = "#{(baseRepo || repo.name).split('/')[0]}:#{branchName}"
                 prOpts = { title, body, head, base: baseBranch }
                 repo.createPr prOpts, (e, b, h) ->
                   return res.status(400).json messages: ["createPr: #{e.message}"] if e?
