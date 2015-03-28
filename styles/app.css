@@ -1,0 +1,20 @@
+.tab-content {
+  padding-top: 2em;
+}
+
+td.has-diff {
+  background-color: #ffc;
+}
+
+.table-striped>tbody>tr:nth-of-type(odd) td.has-diff {
+  background-color: #fafac8;
+}
+
+#language-switch {
+  margin-right: 0;
+}
+
+.list-group-item a {
+  cursor: pointer;
+  display: block;
+}
