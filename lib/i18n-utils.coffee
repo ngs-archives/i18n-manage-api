@@ -1,6 +1,15 @@
 extend = require 'extend'
 CSON = require 'cson'
 
+DEFAULT_PREFIX = """
+"use strict"
+
+module.exports =
+
+"""
+
+DEFAULT_SUFFIX = "\n"
+
 find = (obj, pathComponents, fullKeyName = '') ->
   key = pathComponents.shift()
   return fullKeyName unless key
@@ -10,15 +19,20 @@ find = (obj, pathComponents, fullKeyName = '') ->
   else
     obj
 
-toResources = (obj, prefix = '') ->
+toResources = (obj, prefix = '', index = yes, extension = 'coffee') ->
   res = {}
   for locale, dirs of obj
-    for dir, resources of dirs
-      res["#{prefix}#{locale}/#{dir}/index.coffee"] = resources
+    if index
+      for dir, resources of dirs
+        res["#{prefix}#{locale}/#{dir}/index.#{extension}"] = resources
+    else
+      res["#{prefix}#{locale}.#{extension}"] = dirs
   res
 
-getPendingResources = (tree, obj, prefix = '') ->
-  resources = toResources obj, prefix
+getPendingResources = (tree, obj, prefix = '', index = yes, extension = 'coffee') ->
+  resources = toResources obj, prefix, index, extension
+  localeFromPath = (path) ->
+    (if prefix then path.split(prefix)[1] else path)?.split(/[.\/]/)[0]
   res = { create: [], update: [], keep: [] }
   blobMap = {}
   for blob in tree
@@ -26,11 +40,14 @@ getPendingResources = (tree, obj, prefix = '') ->
     blobMap[path] = blob
   for path, data of resources
     if blob = blobMap[path]
-      res.update.push extend yes, {data,path}, blob
+      locale = localeFromPath path
+      res.update.push extend yes, {data,path,locale}, blob
       delete blobMap[path]
     else
-      res.create.push {data,path}
+      locale = localeFromPath path
+      res.create.push {data,path,locale}
   for k, blob of blobMap
+    blob.locale = localeFromPath blob.path
     res.keep.push blob
   res
 
@@ -50,16 +67,11 @@ createFile = (i18n, requires, fileOptions) ->
   if typeof fileOptions is 'undefined' && !(requires instanceof Array)
     fileOptions = requires
     requires = []
-  { extension, suffix, prefix, indent } = fileOptions || {}
+  { extension, suffix, prefix, indent, locale } = fileOptions || {}
   indent ||= 2
   extension ||= 'coffee'
-  prefix ||= """
-  "use strict"
-
-  module.exports =
-
-  """
-  suffix ||= "\n"
+  prefix ||= DEFAULT_PREFIX
+  suffix ||= DEFAULT_SUFFIX
   if typeof indent is 'number'
     istr = ''
     istr += ' ' while istr.length < indent
@@ -72,33 +84,39 @@ createFile = (i18n, requires, fileOptions) ->
       requiresCode.push """#{indent}#{key}: require \"#{path}\"\n"""
   data = switch extension
     when 'js', 'json'
-      JSON.stringify(removeNull(i18n), null, indent)
-      .replace(/^{/, "{#{requiresCode.join('')}")
+      '/* begin:generatedData */' + JSON.stringify(removeNull(i18n), null, indent)
+      .replace(/^{/, "{#{requiresCode.join('')}") + '/* end:generatedData */'
     when 'cson', 'coffee'
       ret = requiresCode.join ''
       ret += indent + CSON.createCSONString(removeNull(i18n), {indent})
       .replace(/\n/g, "\n  ").replace('{}', '').replace(/#{([^\}]+)}/, '\\#\\{$1\\}')
       ret
-  prefix + data + suffix
+  prefix.replace(/{{locale}}/g, locale) + data + suffix
 
 # requirecallback = function(key, path, resolved)
 # callback = function(data)
-parseFile = (file, requireCallback, callback) ->
-  csonString = file.toString('utf8')
-    .replace /^[.\s\S]*module\.exports\s*=/m, ''
-    .replace /\n\s{2}/g, "\n"
+parseFile = (file, fileOptions, requireCallback, callback) ->
+  fileOptions ||= {}
+  dataString = file.toString('utf8')
+    .replace(/\n\s{2}/gm, "\n")
+    .replace(/^[.\s\S]*module\.exports\s*=/m, '')
+    .replace(/^[.\s\S]*\/\*\sbegin:generatedData\s\*\//m, '')
+    .replace(/\s*\/\*\send:generatedData\s\*\/[.\s\S]*$/m, '')
   requires = []
   re = /\s*\w+\s*:\s*require\s*\(?["'].+["']\)?/gm
-  if m = csonString.match re
+  if m = dataString.match re
     for code in m
       [_code, indent, key, path] = code.match /\n?(\s*)(\w+)\s*:\s*require\s*\(?["'](.+)["']\)?/
       if indent.length > 0
         console.warn "Found indent level #{indent.length / 2}, but currently supporting required namespaces on top level m(_ _)m"
       requires.push {key, path}
-    csonString = csonString.replace re, ''
+    dataString = dataString.replace re, ''
   resolveNextRequire = ->
     if requires.length == 0
-      callback CSON.parse csonString
+      try
+        callback CSON.parse dataString
+      catch e
+        callback JSON.parse dataString
       return
     {key, path} = requires.pop()
     if requireCallback
@@ -111,9 +129,9 @@ parseFile = (file, requireCallback, callback) ->
 
 # requirecallback = function(override, key, path, resolved)
 # callback = function(content)
-updateFile = (file, override, requireCallback, callback) ->
+updateFile = (file, override, fileOptions, requireCallback, callback) ->
   requires = []
-  parseFile file,
+  parseFile file, fileOptions,
   (key, path, resolved) ->
     requires.push { key, path }
     if val = override[key]
@@ -124,7 +142,7 @@ updateFile = (file, override, requireCallback, callback) ->
     return
   ,
   (data) ->
-    file = createFile extend(yes, data, override), requires
+    file = createFile extend(yes, data, override), requires, fileOptions
     callback file
   return
 

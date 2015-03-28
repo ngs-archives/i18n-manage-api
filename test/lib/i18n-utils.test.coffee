@@ -58,7 +58,6 @@ describe 'i18nUtils', ->
           login:
             user: "ユーザー"
 
-
   describe '::getPendingResources', ->
     beforeEach ->
       subject = -> i18nUtils.getPendingResources tree(), obj(), prefix()
@@ -66,18 +65,21 @@ describe 'i18nUtils', ->
       expect(subject()).to.eql
         create: [
           {
+            locale: 'ja'
             data:
               sidebar:
                 foo: "テスト"
             path: "lib/bundle/translations/ja/directives/index.coffee"
           }
           {
+            locale: 'ja'
             data:
               login:
                 user: 'ユーザー'
             path: "lib/bundle/translations/ja/views/index.coffee"
           }
           {
+            locale: 'en'
             data:
               login:
                 user: 'User'
@@ -86,6 +88,7 @@ describe 'i18nUtils', ->
         ]
         update: [
           {
+            locale: 'ja'
             data:
               too_old:
                 ago: "顎"
@@ -93,6 +96,7 @@ describe 'i18nUtils', ->
             sha: "0000000000000000000000000000000000000003"
           }
           {
+            locale: 'en'
             data:
               sidebar:
                 foo: "Test"
@@ -100,6 +104,7 @@ describe 'i18nUtils', ->
             sha: "0000000000000000000000000000000000000001"
           }
           {
+            locale: 'en'
             data:
               too_old:
                 ago: "Ago"
@@ -109,6 +114,7 @@ describe 'i18nUtils', ->
         ]
         keep: [
           {
+            locale: 'ja'
             path: "lib/bundle/translations/ja/errors/index.coffee"
             sha: "0000000000000000000000000000000000000004"
           }
@@ -185,12 +191,12 @@ describe 'i18nUtils', ->
 
     describe 'when extension is js', ->
       beforeEach ->
-        fileOptions = -> extension: 'js', prefix: 'translate(', suffix: ')'
+        fileOptions = -> extension: 'js', prefix: 'translate("{{locale}}", ', suffix: ')', locale: 'ja'
 
       it 'creates js', ->
 
         expect(subject()).to.eql """
-        translate({
+        translate("ja", /* begin:generatedData */{
           "sample2": require("./views/sample2"),
           "sample1": require("./views/sample1"),
           "foo": {
@@ -199,7 +205,7 @@ describe 'i18nUtils', ->
           "baz": {
             "qux": "2"
           }
-        })
+        }/* end:generatedData */)
         """
 
   describe '::parseFile', ->
@@ -207,19 +213,41 @@ describe 'i18nUtils', ->
       content = -> coffeeFile()
       requireCallback = sinon.stub()
       describedMethod = (callback) ->
-        i18nUtils.parseFile content(), requireCallback, callback
+        i18nUtils.parseFile content(), {}, requireCallback, callback
 
     describe 'callback data', ->
-      beforeEach (done) ->
-        subject = -> callbackData
+      it 'callbacks cson parsed data', (done) ->
         describedMethod (data) ->
           try
-            callbackData = data
+            expect(data).to.eql obj()
             do done
           catch e
             done e
-      it 'callbacks parsed data', ->
-        expect(subject()).to.eql obj()
+      it 'callbacks json parsed data', (done) ->
+        content = ->
+          """
+          angular
+          .foo( /* begin:generatedData */{
+            "foo": {
+              "bar": 1
+            },
+            "baz": {
+              "qux": "2"
+            }
+          } /* end:generatedData */);
+          /* yoyo */
+          """
+        obj = ->
+          foo:
+            bar: 1
+          baz:
+            qux: "2"
+        describedMethod (data) ->
+          try
+            expect(data).to.eql obj()
+            do done
+          catch e
+            done e
 
     describe 'resolve require', ->
       call = null
@@ -323,7 +351,7 @@ describe 'i18nUtils', ->
       requireCallback = sinon.stub()
       overrides = -> ja: { directives: sidebar: baz: 'qux' }, foo: 123, qux: '456'
       describedMethod = (callback) ->
-        i18nUtils.updateFile content(), overrides(), requireCallback, callback
+        i18nUtils.updateFile content(), overrides(), {}, requireCallback, callback
 
     describe 'callback data', ->
       beforeEach (done) ->
