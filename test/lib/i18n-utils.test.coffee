@@ -191,21 +191,23 @@ describe 'i18nUtils', ->
 
     describe 'when extension is js', ->
       beforeEach ->
-        fileOptions = -> extension: 'js', prefix: 'translate("{{locale}}", ', suffix: ')', locale: 'ja'
+        fileOptions = -> extension: 'js', prefix: 'foo(function(translations) {\n  translate("{{locale}}", ', suffix: ')\n})', locale: 'ja'
 
       it 'creates js', ->
 
         expect(subject()).to.eql """
-        translate("ja", /* begin:generatedData */{
-          "sample2": require("./views/sample2"),
-          "sample1": require("./views/sample1"),
-          "foo": {
-            "bar": 1
-          },
-          "baz": {
-            "qux": "2"
-          }
-        }/* end:generatedData */)
+        foo(function(translations) {
+          translate("ja", /* begin:generatedData */{
+            "sample2": require("./views/sample2"),
+            "sample1": require("./views/sample1"),
+            "foo": {
+              "bar": 1
+            },
+            "baz": {
+              "qux": "2"
+            }
+          }/* end:generatedData */)
+        })
         """
 
   describe '::parseFile', ->
