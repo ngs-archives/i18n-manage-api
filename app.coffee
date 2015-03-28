@@ -163,7 +163,7 @@ app.post '/i18n/submit', (req, res) ->
     extension
     prefix
     suffix
-    intent
+    indent
   } = req.body
   extension ||= 'coffee'
   fileOptions = { extension, suffix, prefix, indent }
