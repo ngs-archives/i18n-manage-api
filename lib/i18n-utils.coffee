@@ -85,6 +85,7 @@ createFile = (i18n, requires, fileOptions) ->
   data = switch extension
     when 'js', 'json'
       '/* begin:generatedData */' + JSON.stringify(removeNull(i18n), null, indent)
+      .replace(/\n/g, "\n    ")
       .replace(/^{/, "{#{requiresCode.join('')}") + '/* end:generatedData */'
     when 'cson', 'coffee'
       ret = requiresCode.join ''
