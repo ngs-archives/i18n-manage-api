@@ -1,7 +1,8 @@
 +function() {
 
   var $translateProvider = null
-    , defaultTranlsationTable = null
+    , defaultTranslationTable = null
+    , defaultFlatTranslationTable = null
     , apiBaseURL =  'https://kz-i18n-manager.herokuapp.com'
     ;
 
@@ -38,10 +39,24 @@
     return result;
   };
 
+  var unflatObject = function(obj) {
+    var ret = {}, keys, k, i, cursor;
+    for(k in obj) {
+      keys = k.split(NESTED_OBJECT_DELIMITER);
+      cursor = ret;
+      for(i = 0; i < keys.length - 1; i++) {
+        cursor = cursor[keys[i]] = cursor[keys[i]] || {};
+      }
+      cursor[keys[keys.length - 1]] = obj[k];
+    }
+    return ret;
+  }
+
   angular.module('ngs.i18nManage.demo')
   .config(function(_$translateProvider_) {
     $translateProvider = _$translateProvider_;
-    defaultTranlsationTable = flatObject($translateProvider.translations());
+    defaultFlatTranslationTable = flatObject($translateProvider.translations());
+    defaultTranslationTable = unflatObject(defaultFlatTranslationTable);
   })
   .service('i18nManager', function I18nManagerService($rootScope, $http, $translate, $window, $location) {
     var diff = null;
@@ -70,7 +85,8 @@
         })
       },
       importTranslations: function(data) {
-        diff = flatObject(data);
+        diff = flatObject(data || {});
+        if(!data) data = defaultTranslationTable;
         angular.forEach(data, function (table, lang) {
           $translateProvider.translations(lang, table);
           $rootScope.$emit('$translateChangeSuccess', {language: lang});
@@ -84,7 +100,14 @@
           , keys = key.split(NESTED_OBJECT_DELIMITER)
           , lang = keys.shift()
           ;
-        return typeof d !== 'undefined' && defaultTranlsationTable[key] !== d
+        return typeof d !== 'undefined' && defaultFlatTranslationTable[key] !== d
+      },
+      reset: function() {
+        var self = this;
+        return self.request('DELETE', '/')
+        .success(function(data, status, headers, config) {
+          self.importTranslations(null);
+        })
       },
       send: function(key, value) {
         var self = this;

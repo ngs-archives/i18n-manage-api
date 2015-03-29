@@ -19,6 +19,9 @@ angular.module('ngs.i18nManage.demo')
     "title": "Translations",
     "diffOnlyButton": {
       "title": "Show only diffs"
+    },
+    "resetButton": {
+      "title": "Discard changes"
     }
   },
   "pullRequest": {

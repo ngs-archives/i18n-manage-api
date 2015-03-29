@@ -6,6 +6,17 @@
   background-color: #ff9;
 }
 
+.btn-invert {
+  background-color: #000;
+  color: #fff;
+}
+
+.btn-invert:hover,
+.btn-invert:focus,
+.btn-invert:active  {
+  color: #ccc;
+}
+
 #language-switch {
   margin-right: 0;
 }

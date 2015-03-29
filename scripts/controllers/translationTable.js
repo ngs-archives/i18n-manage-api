@@ -7,5 +7,8 @@ angular.module('ngs.i18nManage.demo')
   $scope.languages = i18nManager.languages()
   $scope.keys = i18nManager.keys()
   $scope.showDiffs = false;
+  $scope.resetTranslations = function() {
+    i18nManager.reset();
+  }
 });
 

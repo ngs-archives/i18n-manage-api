@@ -46,7 +46,11 @@
               <p>
                 <button type="button" class="btn btn-info" ng-model="showDiffs" btn-checkbox>
                   <span class="octicon octicon-diff"></span>
-                  {{ 'translationTable.diffOnlyButton.title' | translate }}
+                  <span translate="translationTable.diffOnlyButton.title"></span>
+                </button>
+                <button type="button" class="btn btn-danger" ng-click="resetTranslations($event)">
+                  <span class="octicon octicon-trashcan"></span>
+                  <span translate="translationTable.resetButton.title"></span>
                 </button>
               </p>
             </div>
@@ -67,9 +71,9 @@
               <span translate="pullRequest.title"></span>
             </tab-heading>
             <div ng-if="accessToken == null">
-              <button type="button" class="btn btn-info" ng-click="login()">
-                <span class="octicon octicon-diff"></span>
-                {{ 'pullRequest.login' | translate }}
+              <button type="button" class="btn btn-invert btn-lg" ng-click="login()">
+                <span class="octicon octicon-octoface"></span>
+                <span translate="pullRequest.login"></span>
               </button>
             </div>
             <div ng-if="accessToken != null && !hasDiffs">

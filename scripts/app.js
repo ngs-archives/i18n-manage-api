@@ -21,6 +21,7 @@ angular.module('ngs.i18nManage.demo', [
       ;
     if(!key || element[0].querySelector('[translation-table-form]'))
       return;
+    e.preventDefault();
     element.html('');
     $scope = $rootScope.$new();
     $scope.key = $translate.use() + '.' + key;

@@ -19,6 +19,9 @@ angular.module('ngs.i18nManage.demo')
     "title": "翻訳一覧",
     "diffOnlyButton": {
       "title": "差分のみ表示する"
+    },
+    "resetButton": {
+      "title": "変更を破棄する"
     }
   },
   "pullRequest": {
