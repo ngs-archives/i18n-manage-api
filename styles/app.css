@@ -2,12 +2,8 @@
   padding-top: 2em;
 }
 
-td.has-diff {
-  background-color: #ffc;
-}
-
-.table-striped>tbody>tr:nth-of-type(odd) td.has-diff {
-  background-color: #fafac8;
+.has-diff {
+  background-color: #ff9;
 }
 
 #language-switch {
