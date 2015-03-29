@@ -1,7 +1,7 @@
 angular.module('ngs.i18nManage.demo')
 .config(function($translateProvider) {
   $translateProvider.translations('en',/* begin:generatedData */{
-    "title": "I18n Manager Demo",
+    "title": "I18n Manager Demo!",
     "languages": {
       "en": {
         "title": "English"
@@ -13,7 +13,7 @@ angular.module('ngs.i18nManage.demo')
     "introduction": {
       "title": "Demo",
       "paragraph1": "This is a demo application of <b><a href=\"https://github.com/ngs/i18n-manage-api\">i18n manager</a></b>.",
-      "paragraph2": "Start inline translating by clicking element with <kbd>option (alt)</kbd> key."
+      "paragraph2": "Start inline translating by clicking element with <kbd>option (alt)</kbd> key :)"
     },
     "translationTable": {
       "title": "Translations",
