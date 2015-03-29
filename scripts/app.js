@@ -1,9 +1,11 @@
 angular.module('ngs.i18nManage.demo', [
   'pascalprecht.translate',
-  'ui.bootstrap',
-  'ngSanitize'
+  'ui.bootstrap'
 ])
-.run(function($rootScope, $compile, $translate, $sanitize, $window) {
+.run(function($rootScope, $compile, $translate, $window, i18nManager) {
+  $rootScope.$on('$translateChangeSuccess', function() {
+    $rootScope.diffCount = Object.keys(i18nManager.diff()).length;
+  });
   $window.onkeydown = function handkeKeyDown(e) {
     var body = angular.element(document.body);
     if(e.which === 18)

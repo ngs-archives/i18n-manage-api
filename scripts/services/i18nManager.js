@@ -86,6 +86,10 @@
       },
       importTranslations: function(data) {
         diff = flatObject(data || {});
+        angular.forEach(diff, function(value, key) {
+          if(defaultFlatTranslationTable[key] === value)
+            delete diff[key];
+        });
         if(!data) data = defaultTranslationTable;
         angular.forEach(data, function (table, lang) {
           $translateProvider.translations(lang, table);

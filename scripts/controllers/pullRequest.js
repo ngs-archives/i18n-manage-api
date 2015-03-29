@@ -61,9 +61,6 @@ angular.module('ngs.i18nManage.demo')
   $scope.createFork = function(owner) {
     createFork(owner.login);
   };
-  $rootScope.$on('$translateChangeSuccess', function() {
-    $scope.hasDiffs = Object.keys(i18nManager.diff()).length > 0;
-  });
   $scope.accessToken = null;
   i18nManager.auth()
   .success(function(data, status, headers, config) {
