@@ -1,6 +1,6 @@
 angular.module('ngs.i18nManage.demo')
 .config(function($translateProvider) {
-  $translateProvider.translations('en', /* begin:generatedData */{
+  $translateProvider.translations('en',/* begin:generatedData */{
     "title": "I18n Manager Demo",
     "languages": {
       "en": {
@@ -12,11 +12,11 @@ angular.module('ngs.i18nManage.demo')
     },
     "introduction": {
       "title": "Demo",
-      "paragraph1": "This is a demo application of <a href=\"https://github.com/ngs/i18n-manage-api\">i18n manager.",
-      "paragraph2": "Start inline translating by clicking element with <kbd>ctrl + shift</kbd> key."
+      "paragraph1": "This is a demo application of <a href=\"https://github.com/ngs/i18n-manage-api\">i18n manager</a>.",
+      "paragraph2": "Start inline translating by clicking element with <kbd>option</kbd> key."
     },
     "translationTable": {
-      "title": "Translations",
+      "title": "Translations3",
       "diffOnlyButton": {
         "title": "Show only diffs"
       }
@@ -28,5 +28,5 @@ angular.module('ngs.i18nManage.demo')
       "createFork": "Create fork",
       "or": "or"
     }
-  } /* end:generatedData */);
+  }/* end:generatedData */);
 });
