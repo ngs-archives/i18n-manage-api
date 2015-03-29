@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="ngs.i18nManage.demo">
 <head>
   <meta charset="utf-8">
   <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.4/cosmo/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/octicons/2.2.0/octicons.min.css" rel="stylesheet">
   <link href="./styles/app.css" rel="stylesheet">
-  <title></title>
+  <title translate="title"></title>
 </head>
-<body ng-app="ngs.i18nManage.demo" ng-mousedown="handleMouseDown($event);" ng-keydown="handleKeyDown($event)" ng-keydown="handleKeyUp($event)">
+<body ng-mousedown="handleMouseDown($event);" ng-keydown="handleKeyDown($event)" ng-keydown="handleKeyUp($event)">
   <div class="container ng-hide" ng-show="initialized">
     <div class="row">
       <div class="col-md-12">
