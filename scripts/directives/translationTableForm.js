@@ -6,8 +6,9 @@ angular.module('ngs.i18nManage.demo')
     templateUrl: 'directives/translationTable/form.html',
     controller: function($rootScope, $scope, i18nManager, $translate) {
       $rootScope.$on('$translateChangeSuccess', function() {
+        var m = $scope.key.match(/^([^\.]+)\.(.+)$/);
         $scope.diff = i18nManager.hasDiff($scope.key);
-        $scope.value = $translate.instant($scope.key.replace(/^[^\.]+\./, ''));
+        $scope.value = i18nManager.translations()[m[1]][m[2]];
       });
       $scope.startEditing = function($event) {
         if($event.altKey || !$scope.inline) {
