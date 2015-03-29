@@ -42,6 +42,10 @@ currentToken = (req, res) ->
   res.status(401).json message: 'Not logged in'
   return
 
+app.delete '/', (req, res) ->
+  req.session.i18n = null
+  res.json success: yes
+
 app.get '/', (req, res) ->
   if token = currentToken(req, res)
     res.json message: 'It works', token: token
