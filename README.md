@@ -2,7 +2,7 @@
 
 Web API to Manage Angular App I18n file.
 
-[![Circle CI](https://circleci.com/gh/kaizenplatform/i18n-manage-api.svg?style=svg&circle-token=dc5fbee552f315f3a96955536b472d6587d71508)](https://circleci.com/gh/kaizenplatform/i18n-manage-api)
+[![Circle CI](https://circleci.com/gh/ngs/i18n-manage-api.svg?style=svg&circle-token=dc5fbee552f315f3a96955536b472d6587d71508)](https://circleci.com/gh/ngs/i18n-manage-api)
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
