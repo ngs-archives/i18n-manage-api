@@ -5,6 +5,7 @@ angular.module('ngs.i18nManage.demo', [
 .run(function($rootScope, $compile, $translate, $window, i18nManager) {
   $rootScope.$on('$translateChangeSuccess', function() {
     $rootScope.diffCount = Object.keys(i18nManager.diff()).length;
+    $rootScope.initialized = true;
   });
   $window.onkeydown = function handkeKeyDown(e) {
     var body = angular.element(document.body);
