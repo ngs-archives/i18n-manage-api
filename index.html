@@ -7,7 +7,7 @@
   <link href="./styles/app.css" rel="stylesheet">
   <title></title>
 </head>
-<body ng-app="ngs.i18nManage.demo" ng-mousedown="handleMouseDown($event);">
+<body ng-app="ngs.i18nManage.demo" ng-mousedown="handleMouseDown($event);" ng-keydown="handleKeyDown($event)" ng-keydown="handleKeyUp($event)">
   <div class="container">
     <div class="row">
       <div class="col-md-12">
@@ -33,7 +33,7 @@
         <tabset>
           <tab ng-controller="IntroductionController" select="onTabSelect()">
             <tab-heading>
-              <span>{{ 'introduction.title' | translate }}</span>
+              <span translate="introduction.title"></span>
             </tab-heading>
             <p translate="introduction.paragraph1"></p>
             <p translate="introduction.paragraph2"></p>
@@ -64,7 +64,7 @@
           </tab>
           <tab ng-controller="PullRequestController" select="onTabSelect()" active="isDefault">
             <tab-heading>
-              <span>{{ 'pullRequest.title' | translate }}</span>
+              <span translate="pullRequest.title"></span>
             </tab-heading>
             <div ng-if="accessToken == null">
               <button type="button" class="btn btn-info" ng-click="login()">

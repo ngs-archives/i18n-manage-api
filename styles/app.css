@@ -14,3 +14,19 @@
   cursor: pointer;
   display: block;
 }
+
+.opt-hold *[translate] {
+  position: relative;
+}
+
+.opt-hold *[translate]:before {
+  position: absolute;
+  top: 0;
+  left: -1em;
+  content: '\00b6';
+  color: #eab5f9;
+  font-size: 12px;
+  margin-right: -20px;
+  width: 20px;
+  display: inline-block;
+}
