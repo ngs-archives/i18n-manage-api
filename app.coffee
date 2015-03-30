@@ -181,8 +181,8 @@ app.post '/i18n/submit', (req, res) ->
     res.status(404).json messages: ['No I18n']
     return
   client = github.client token
-  repo = client.repo repo
   baseRepo = client.repo baseRepo || repo
+  repo = client.repo repo
   client.me().info (e, b) ->
     return res.status(400).json messages: [e.message] if e?
     me = b
