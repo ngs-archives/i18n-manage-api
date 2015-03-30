@@ -1,5 +1,7 @@
 # i18n-manage-api
 
+![](http://ja.ngs.io/images/2015-03-30-i18n-manager/i18n.gif)
+
 Web API to Manage Angular App I18n file.
 
 [![Circle CI](https://circleci.com/gh/ngs/i18n-manage-api.svg?style=svg&circle-token=dc5fbee552f315f3a96955536b472d6587d71508)](https://circleci.com/gh/ngs/i18n-manage-api)
